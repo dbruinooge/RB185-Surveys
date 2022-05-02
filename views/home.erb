@@ -1,0 +1,24 @@
+<h1>Survey Site</h1>
+<h2>Make Your Own Survey</h2>
+<a href="/make_survey">Click here to make your own survey</a>
+
+<h2>List of Surveys</h2>
+<ul>
+  <% @surveys.each do |survey| %>
+    <li>
+      <a href="/surveys/<%= survey[:survey_id] %>"><%= survey[:title] %></a>
+    </li>
+  <% end %>
+</ul>
+
+<footer>
+  <% if session[:username] %>
+    <p>Logged in as: <%= session[:username] %></p>
+    <form action="/users/signout" method="post">
+      <button type="submit">Sign out</button>
+    </form>
+  <% else %>
+    <p><a href="/users/signup">Create a new account</a></p>
+    <p><a href="/users/signin">Sign in</a></p>
+  <% end %>
+</footer>

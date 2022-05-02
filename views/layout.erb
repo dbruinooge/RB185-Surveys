@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Surveys</title>
+    <meta charset="utf-8"/>
+</head>
+<body>
+  <% if session[:message] %>
+    <p><%= session.delete(:message) %></p>
+  <% end %>
+  <main>
+    <%== yield %>
+  </main>
+
+  <br>
+  <a href="/">Back to home</a>
+
+</body>
+</html>
