@@ -3,5 +3,8 @@
 <p>Created on: <%= @survey[:created_on] %></p>
 <p>Number of questions: <%= number_of_questions(@survey[:survey_id]) %></p>
 
-<a href="/surveys/take/<%= @survey[:survey_id] %>">Take the survey</a>
+<p><a href="/surveys/take/<%= @survey[:survey_id] %>">Take the survey</a></p>
+
+<p><a href="/surveys/results/<%= @survey[:survey_id] %>">See the results</a></p>
+
 <p>(Please note that you can only take each survey once)</p>

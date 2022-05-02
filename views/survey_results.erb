@@ -1,0 +1,15 @@
+<h1>Results for "<%= @survey[:title] %>"</h1>
+
+<% @results.each do |result| %>
+  <p>Question: <%= result[:question] %></p>
+
+  <ul>
+    <% result[:choices].each do |choice| %>
+    <li>
+      <%= choice["choice"] %>: <%= choice["choice_count"] %>
+      (<%= choice_percentage(choice["choice_count"], @total) %>%)
+    </li>
+    <% end %>
+  </ul>
+<% end %>
+

@@ -1,18 +1,21 @@
 <h1><%= @survey[:title] %></h1>
 
 <form action="/surveys/take/<%= @survey[:survey_id] %>" method="post">
-  <% @questions_choices.each do |question_choice| %>
-    <%= question_id = question_choice[:question_id] %>
+  <% @survey_items.each do |survey_item| %>
+    <% question_id = survey_item[:question_id] %>
     <fieldset>
-      <legend><%= question_choice[:question] %></legend>
+      <legend><%= survey_item[:question] %></legend>
 
-      <% question_choice[:choices].each do |choice| %>
+      <% survey_item[:choices].each do |choice| %>
         <% choice_id = choice[:choice_id] %>
         <% choice_text = choice[:choice] %>
 
         <div>
           <input type="radio" id="<%= choice_id %>" name="<%= question_id %>" value="<%= choice_id %>"
-                 checked>
+          <% if choice == survey_item[:choices].first %>
+            checked
+          <% end %> >
+
           <label for="<%= choice_id %>"><%= choice_text %></label>
         </div>
       <% end %>

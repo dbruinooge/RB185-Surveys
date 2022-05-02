@@ -1,15 +1,16 @@
-<h1>Survey Site</h1>
-<h2>Make Your Own Survey</h2>
-<a href="/make_survey">Click here to make your own survey</a>
+<h1>Surveys</h1>
 
-<h2>List of Surveys</h2>
-<ul>
-  <% @surveys.each do |survey| %>
-    <li>
-      <a href="/surveys/<%= survey[:survey_id] %>"><%= survey[:title] %></a>
-    </li>
-  <% end %>
-</ul>
+<p>
+  <a = href="/index">View all surveys</a>
+</p>
+
+<p>
+  <a href="/users/surveys">View my surveys</a>
+</p>
+
+<p>
+  <a href="/make_survey">Make my own own survey</a>
+</p>
 
 <footer>
   <% if session[:username] %>

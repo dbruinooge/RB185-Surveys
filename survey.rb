@@ -3,6 +3,7 @@ require "sinatra/content_for"
 require "tilt/erubis"
 require "bcrypt"
 require "pry"
+require "bcrypt"
 
 require_relative "lib/database_persistence.rb"
 
@@ -22,6 +23,10 @@ before do
   @storage = DatabasePersistence.new
 end
 
+after do
+  @storage.disconnect
+end
+
 helpers do
   def number_of_questions(survey_id)
     @storage.find_number_of_questions(survey_id)
@@ -37,10 +42,16 @@ def valid_credentials?(username, password)
   if @storage.username_exists?(username)
     # bcrypt_password = BCrypt::Password.new(@storage.find_password(username))
     database_password = @storage.find_password(username)
-    database_password == password
+    bcrypt_password = BCrypt::Password.new(database_password)
+    bcrypt_password == password
   else
     false
   end
+end
+
+def authorized_to_delete?(survey_id, user_id)
+  surveys = @storage.find_surveys_for_user(user_id)
+  surveys.any? { |survey| survey[:survey_id] = survey_id }
 end
 
 def error_for_survey_title(title)
@@ -72,10 +83,20 @@ def user_took_survey?(survey_id)
   @storage.find_taken_record(user_id, survey_id)
 end
 
-# View the index
+def choice_percentage(choice_count, total_count)
+  (choice_count.to_f / total_count.to_f * 100).round
+end
+
+# View the home page
 get "/" do
-  @surveys = @storage.find_all_surveys
   erb :home
+end
+
+# View all surveys
+get "/index" do
+  require_signed_in_user unless session[:username]
+  @surveys = @storage.find_all_surveys
+  erb :index
 end
 
 # View the signin page
@@ -120,7 +141,7 @@ get "/surveys/take/:survey_id" do
     session[:message] = "Sorry, you've already taken this survey."
     erb :survey
   else
-    @questions_choices = @storage.find_survey_items(survey_id)
+    @survey_items = @storage.find_survey_items(survey_id)
     erb :take_survey
   end
 end
@@ -130,9 +151,9 @@ post "/surveys/take/:survey_id" do
   survey_id = params.delete(:survey_id)
   user_id = @storage.find_user_id(session[:username])
   @storage.record_choices(params)
-  @storage.record_user_took_survey(user_id, survey_id)
+  @storage.add_taken_record(user_id, survey_id)
   session[:message] = "Thanks for taking the survey!"
-  redirect "/"
+  redirect "/surveys/results/#{survey_id}"
 end
 
 # View survey maker screen
@@ -152,7 +173,8 @@ post "/make_survey" do
     @storage.add_survey(title, session[:username])
     @storage.add_survey_items(params)
     session[:message] = "Survey successfully created."
-    redirect "/"
+    survey_id = @storage.last_survey_id
+    redirect "/surveys/#{survey_id}"
   end
 end
 
@@ -161,6 +183,7 @@ get "/users/signup" do
   erb :signup
 end
 
+# Submit new signup form
 post "/users/signup" do
   username = params[:username]
   password1 = params[:password1]
@@ -170,8 +193,48 @@ post "/users/signup" do
     session[:message] = error
     erb :signup
   else
-    @storage.add_user(username, password1)
+    hashed_password = BCrypt::Password.create(password1)
+    @storage.add_user(username, hashed_password)
     session[:message] = "Welcome! Please sign in to your account."
     redirect "/"
   end
+end
+
+# View my surveys
+get "/users/surveys" do
+  require_signed_in_user unless session[:username]
+  user_id = @storage.find_user_id(session[:username])
+  @my_surveys = @storage.find_surveys_for_user(user_id)
+  erb :my_surveys
+end
+
+# Delete a survey
+post "/surveys/delete/:survey_id" do
+  survey_id = params[:survey_id]
+  user_id = @storage.find_user_id(session[:username])
+  if authorized_to_delete?(survey_id, user_id)
+    @storage.delete_survey(survey_id)
+    redirect "/users/surveys"
+  else
+    session[:message] = "You aren't authorized to take that action."
+    redirect "/"
+  end
+end
+
+# View a survey's results
+get "/surveys/results/:survey_id" do
+  require_signed_in_user unless session[:username]
+  survey_id = params[:survey_id]
+  @survey = @storage.find_survey(survey_id)
+  @results = @storage.find_results(survey_id)
+  @total = @storage.times_survey_taken(survey_id)
+  erb :survey_results
+end
+
+# def show_percentage(choice_count, total_count)
+#   choice_count.to_f / total_count.to_f
+# end
+
+not_found do
+  redirect "/"
 end

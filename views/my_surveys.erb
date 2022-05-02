@@ -1,0 +1,21 @@
+<h1>My Surveys</h1>
+
+<% if @my_surveys %>
+  <ul>
+    <% @my_surveys.each do |survey| %>
+      <li>
+        <a href="/surveys/<%= survey[:survey_id] %>">
+          <%= survey[:title] %>
+        </a>
+        <br>
+        <br>
+
+        <form action="/surveys/delete/<%= survey[:survey_id] %>" method="post">
+          <button type="submit">Delete survey</button>
+        </form>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <p>You haven't created any surveys yet.</p>
+<% end %>

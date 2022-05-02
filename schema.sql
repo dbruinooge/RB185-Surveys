@@ -33,24 +33,3 @@ CREATE TABLE users_taken_surveys (
   survey_id integer NOT NULL REFERENCES surveys (survey_id) ON DELETE CASCADE,
   taken_on timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-
-INSERT INTO users (username, password) VALUES
-  ('admin', 'password')
-;
-
-INSERT INTO surveys (title, user_id) VALUES
-  ('Fun Survey', 1)
-;
-
-INSERT INTO questions (question, survey_id) VALUES
-  ('What''s your favorite flavor of ice cream?', 1),
-  ('What''s your favorite sport?', 1)
-;
-
-INSERT INTO choices (choice, question_id) VALUES
-  ('Chocolate', 1),
-  ('Vanilla', 1),
-  ('Baseball', 2),
-  ('Basketball', 2),
-  ('Hocket', 2)
-;

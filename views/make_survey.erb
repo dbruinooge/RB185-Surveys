@@ -1,9 +1,9 @@
-<h1>Make your own survey</h1>
+<h1>Make my own survey</h1>
 
 <p>First enter a title for your survey.</p>
 <p>Then enter up to six questions and up to six choices for each question.</p>
 <br>
-<p>Rules:</p>
+<p>Restrictions:</p>
 <p>Each question must have at least two choices.</p>
 <p>Blank questions and answers will be ignored.</p>
 <p>Choices without a corresponding question will be ignored.</p>
@@ -12,21 +12,21 @@
 
 <form action="/make_survey" method="post">
   <label for="title">Survey title:</label>
-  <input name="title"/>
+  <input name="title" size="40"/>
 
   <% 1.upto(6) do |q| %>
     <fieldset>
 
-      <legend>Question<%= q %></legend>
+      <legend>Question <%= q %></legend>
         <div>
           <label for="q<%= q %>">Question:</label>
-          <input name="q<%= q %>" id="q<%= q %>" />
+          <input name="q<%= q %>" id="q<%= q %>" size="40"/>
         </div>
         <br>
         <% 1.upto(6) do |c| %>
           <div>
             <label for="q<%= q %>c<%= c %>">Choice <%= c %></label>
-            <input name="q<%= q %>c<%= c %>" id="q<%= q %>c<%= c %>"/>
+            <input name="q<%= q %>c<%= c %>" id="q<%= q %>c<%= c %>" size="40"/>
           </div>
         <% end %>
 

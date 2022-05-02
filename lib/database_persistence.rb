@@ -10,6 +10,10 @@ class DatabasePersistence
     @db.exec_params(statement, arguments)
   end
 
+  def disconnect
+    @db.close
+  end
+
   def username_exists?(username)
     sql = "SELECT username FROM users"
     result = query(sql)
@@ -79,7 +83,7 @@ class DatabasePersistence
     result = query(sql, survey_id)
     result.map do |tuple|
       {
-        question_id: tuple["question_id"],
+        question_id: tuple["question_id"].to_i,
         question: tuple["question"]
       }
     end
@@ -93,7 +97,7 @@ class DatabasePersistence
     SQL
     result = query(sql, question_id)
     result.map do |tuple|
-      { choice_id: tuple["choice_id"], choice: tuple["choice"] }
+      { choice_id: tuple["choice_id"].to_i, choice: tuple["choice"] }
     end
   end
 
@@ -110,7 +114,6 @@ class DatabasePersistence
   def add_survey_items(params)
     params = cleanup_survey_items(params)
     params = survey_items_to_hash(params)
-    binding.pry
     params.each do |survey_item|
       survey_id = last_survey_id
       question = survey_item[:question]
@@ -203,7 +206,7 @@ class DatabasePersistence
     result.first
   end
 
-  def record_user_took_survey(user_id, survey_id)
+  def add_taken_record(user_id, survey_id)
     sql = <<~SQL
       INSERT INTO users_taken_surveys (user_id, survey_id)
       VALUES ($1, $2)
@@ -216,6 +219,61 @@ class DatabasePersistence
       SELECT count(questions.survey_id) FROM questions
       JOIN surveys ON surveys.survey_id = questions.survey_id
       WHERE questions.survey_id = $1
+    SQL
+    result = query(sql, survey_id)
+    result.first["count"]
+  end
+
+  def find_surveys_for_user(user_id)
+    sql = <<~SQL
+      SELECT surveys.survey_id, surveys.title FROM surveys
+      JOIN users ON surveys.user_id = users.user_id
+      WHERE users.user_id = $1
+    SQL
+    result = query(sql, user_id)
+    return result.first unless result.first
+    result.map do |tuple|
+     { title: tuple["title"], survey_id: tuple["survey_id"] }
+    end
+  end
+
+  def delete_survey(survey_id)
+    sql = <<~SQL
+      DELETE FROM surveys
+      WHERE survey_id = $1
+    SQL
+    query(sql, survey_id)
+  end
+
+  def find_results(survey_id)
+    results = []
+    questions = find_questions_for_survey(survey_id)
+    questions.each do |question|
+      question_text = question[:question]
+      question_id = question[:question_id]
+      choice_counts = choice_counts_for_question(question_id)
+      results << {question: question_text, question_id: question_id,
+                  choices: choice_counts.to_a }
+    end
+    results
+  end
+
+  def choice_counts_for_question(question_id)
+    sql = <<~SQL
+      SELECT choices.choice, count(responses.choice_id) AS choice_count
+      FROM responses
+      JOIN choices ON choices.choice_id = responses.choice_id
+      JOIN questions ON questions.question_id = choices.question_id
+      WHERE questions.question_id = $1
+      GROUP BY choices.choice, questions.question_id
+    SQL
+    query(sql, question_id)
+  end
+
+  def times_survey_taken(survey_id)
+    sql = <<~SQL
+      SELECT count(survey_id) FROM users_taken_surveys
+      WHERE survey_id = $1
     SQL
     result = query(sql, survey_id)
     result.first["count"]
