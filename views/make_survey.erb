@@ -1,18 +1,21 @@
 <h1>Make my own survey</h1>
 
-<p>First enter a title for your survey.</p>
+<p>Enter a title for your survey.</p>
 <p>Then enter up to six questions and up to six choices for each question.</p>
 <br>
 <p>Restrictions:</p>
-<p>Each question must have at least two choices.</p>
+<p>Each question must be accompanied by at least two choices.</p>
 <p>Blank questions and answers will be ignored.</p>
 <p>Choices without a corresponding question will be ignored.</p>
-<br>
 <p>Click "Submit" when you're done!</p>
+
+<br>
 
 <form action="/make_survey" method="post">
   <label for="title">Survey title:</label>
   <input name="title" size="40"/>
+  <br>
+  <br>
 
   <% 1.upto(6) do |q| %>
     <fieldset>

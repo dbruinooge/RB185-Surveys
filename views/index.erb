@@ -1,9 +1,13 @@
 <h1>All Surveys</h1>
 
-<ul>
-  <% @surveys.each do |survey| %>
-    <li>
-      <a href="/surveys/<%= survey[:survey_id] %>"><%= survey[:title] %></a>
-    </li>
-  <% end %>
-</ul>
+<% if @surveys.first %>
+  <ul>
+    <% @surveys.each do |survey| %>
+      <li>
+        <a href="/surveys/<%= survey[:survey_id] %>"><%= survey[:title] %></a>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <p>No surveys have been created yet.</p>
+<% end %>

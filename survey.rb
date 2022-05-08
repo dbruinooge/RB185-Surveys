@@ -109,7 +109,7 @@ post "/users/signin" do
   username = params[:username]
   if valid_credentials?(username, params[:password])
     session[:username] = username
-    session[:message] = "Welcome!"
+    session[:message] = "Welcome, #{username}!"
     redirect "/"
   else
     session[:message] = "Invalid credentials."
@@ -195,7 +195,7 @@ post "/users/signup" do
   else
     hashed_password = BCrypt::Password.create(password1)
     @storage.add_user(username, hashed_password)
-    session[:message] = "Welcome! Please sign in to your account."
+    session[:message] = "Account created successfully. Please sign in."
     redirect "/"
   end
 end
@@ -230,10 +230,6 @@ get "/surveys/results/:survey_id" do
   @total = @storage.times_survey_taken(survey_id)
   erb :survey_results
 end
-
-# def show_percentage(choice_count, total_count)
-#   choice_count.to_f / total_count.to_f
-# end
 
 not_found do
   redirect "/"
